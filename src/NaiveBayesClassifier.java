@@ -27,17 +27,22 @@ public class NaiveBayesClassifier{
     private static final String DELIMITER = ",";
     private static int[] trainLabel;
 
-    //private Category[] categoryArray = new Category[20];
-
 
     public static void main(String[] args) throws IOException {
         Category[] categoryArray = new Category[20];
         for(int i = 0; i < categoryArray.length; i++){
             categoryArray[i] = new Category(i);
         }
+        //categoryArray[1].getFromWordsInClass(50);
 
         categoryArray = excelToArrayOfList(toIntExact(findNumberLineForLabel()),categoryArray);
-        calculateDocumentsPerClass(categoryArray);
+        categoryArray = calculateDocumentsPerClass(categoryArray);
+        for(int i = 0; i < categoryArray.length; i++){
+            categoryArray[i].calculateNumTimesWordOccurs();
+            categoryArray[i].calculateMaximumLikelihood();
+
+        }
+
     }
     public static long findTotalNumberOfDistinctWords() throws IOException {
         int numwords = 0;
@@ -85,7 +90,7 @@ public class NaiveBayesClassifier{
                 for(int i = 0; i < Integer.parseInt(trainDataLine[2]); i++){ //for everytime that word is in the document
                     currentLabelLine = Integer.parseInt(trainDataLine[0]) - 1;
                     //wordsByClass[trainLabel[currentLabelLine] - 1].add(Integer.parseInt(trainDataLine[1]));
-                    categoryArray[trainLabel[currentLabelLine] - 1].add(Integer.parseInt(trainDataLine[1]));
+                    categoryArray[trainLabel[currentLabelLine] - 1].addToWordsInClass(Integer.parseInt(trainDataLine[1]));
                 }
             }
         } catch (Exception ee) {
@@ -100,24 +105,26 @@ public class NaiveBayesClassifier{
             }
         }
         for(int i = 0; i < categoryArray.length; i++){
-            categoryArray[i].setNumWordsInClass(categoryArray[i].size());
+            categoryArray[i].setNumWordsInClass(categoryArray[i].getSizeOfWordsInClass());
         }
         return categoryArray;
 
     }
 
-    public static void calculateDocumentsPerClass(Category[] categoryArray) {
+    public static Category[] calculateDocumentsPerClass(Category[] categoryArray) {
         double totalDocuments = trainLabel.length;
         int currentLabelLine = 0;
         for(int i = 0; i < trainLabel.length; i++){
-          categoryArray[trainLabel[i]-1].increment();
+          categoryArray[trainLabel[i]-1].incrementDocumentsInClass();
         }
         for(int i = 0; i < categoryArray.length; i++){
             categoryArray[i].setProir(categoryArray[i].getDocumentsInClass() / totalDocuments); //Prior of class = number of docs for that class / total documents
         }
         for(int i = 0; i < categoryArray.length; i++){
-            System.out.println(categoryArray[i].getProir());
+            System.out.println("Prior Document" + (i + 1) + ":" + categoryArray[i].getProir()); //Prior of class = number of docs for that class / total documents
         }
+        return categoryArray;
     }
-    }
+}
+
 

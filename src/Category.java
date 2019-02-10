@@ -13,9 +13,24 @@ import java.util.stream.Collectors;
 import java.io.FileReader;
 
 
-public class Category extends NaiveBayesClassifier {
+public class Category  {
+    private static final double VOCABLENGTH = 61188.0;
     private int numWordsInClass = 0;
+    private int documentsInClass = 0;
+    protected ArrayList<Integer> wordsInClass;
+    protected int[] timesWordAppearsInClass;
+    protected double[] maximumLikelihoodEstimator;
+    private int categoryNumber;
+    private double proir = 0;
 
+    public Category(int categoryNum) {
+
+        categoryNumber = categoryNum;
+        wordsInClass = new ArrayList<Integer>();
+        timesWordAppearsInClass = new int[61188];
+        maximumLikelihoodEstimator = new double[61188];
+
+    }
     public int getDocumentsInClass() {
         return documentsInClass;
     }
@@ -28,27 +43,19 @@ public class Category extends NaiveBayesClassifier {
         this.proir = proir;
     }
 
-    private int documentsInClass = 0;
-    protected ArrayList<Integer> wordsInClass;
-    private int categoryNumber;
-    private double proir = 0;
-
-    public Category(int categoryNum) {
-        super();
-        categoryNumber = categoryNum;
-        wordsInClass = new ArrayList<Integer>();
-
+    public void getFromWordsInClass(int indexToGet) {
+        wordsInClass.get(indexToGet);
     }
 
-    public void add(int numberToAdd) {
+    public void addToWordsInClass(int numberToAdd) {
         wordsInClass.add(numberToAdd);
     }
 
-    public void increment() {
+    public void incrementDocumentsInClass() {
         documentsInClass = documentsInClass + 1;
     }
 
-    public int size() {
+    public int getSizeOfWordsInClass() {
         return wordsInClass.size();
     }
 
@@ -68,5 +75,18 @@ public class Category extends NaiveBayesClassifier {
 
     public void setCategoryNumber(int categoryNumber) {
         this.categoryNumber = categoryNumber;
+    }
+
+    public void calculateNumTimesWordOccurs(){
+        for(int i = 0; i < wordsInClass.size(); i++){
+            timesWordAppearsInClass[wordsInClass.get(i)] = timesWordAppearsInClass[wordsInClass.get(i)] + 1;
+
+        }
+    }
+    public void calculateMaximumLikelihood(){
+        for(int i = 0; i < timesWordAppearsInClass.length; i++){
+            maximumLikelihoodEstimator[i] = timesWordAppearsInClass[i] / VOCABLENGTH;
+
+        }
     }
 }
