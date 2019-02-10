@@ -20,6 +20,7 @@ public class Category  {
     protected ArrayList<Integer> wordsInClass;
     protected int[] timesWordAppearsInClass;
     protected double[] maximumLikelihoodEstimator;
+    protected double[] bayesianEstimator;
     private int categoryNumber;
     private double proir = 0;
 
@@ -29,6 +30,7 @@ public class Category  {
         wordsInClass = new ArrayList<Integer>();
         timesWordAppearsInClass = new int[61188];
         maximumLikelihoodEstimator = new double[61188];
+        bayesianEstimator = new double[61188];
 
     }
     public int getDocumentsInClass() {
@@ -43,8 +45,8 @@ public class Category  {
         this.proir = proir;
     }
 
-    public void getFromWordsInClass(int indexToGet) {
-        wordsInClass.get(indexToGet);
+    public int getFromWordsInClass(int indexToGet) {
+        return wordsInClass.get(indexToGet);
     }
 
     public void addToWordsInClass(int numberToAdd) {
@@ -77,16 +79,22 @@ public class Category  {
         this.categoryNumber = categoryNumber;
     }
 
-    public void calculateNumTimesWordOccurs(){
+    public void calculateNumTimesWordOccurs(){ //nk
         for(int i = 0; i < wordsInClass.size(); i++){
             timesWordAppearsInClass[wordsInClass.get(i)] = timesWordAppearsInClass[wordsInClass.get(i)] + 1;
 
         }
     }
-    public void calculateMaximumLikelihood(){
+    public void calculateMaximumLikelihood(){ //Pmle(wk|wj) = nk/n
         for(int i = 0; i < timesWordAppearsInClass.length; i++){
-            maximumLikelihoodEstimator[i] = timesWordAppearsInClass[i] / VOCABLENGTH;
+            maximumLikelihoodEstimator[i] = timesWordAppearsInClass[i] / numWordsInClass;
+        }
+    }
 
+    public void calculateBayesianEstimator(){
+        for(int i = 0; i < timesWordAppearsInClass.length; i++){ //use laplace to find Pbe(wk|wj) = nk+1 / v + words in vocab
+            maximumLikelihoodEstimator[i] = (maximumLikelihoodEstimator[i] + 1) / (numWordsInClass + VOCABLENGTH);
+            System.out.println(maximumLikelihoodEstimator[i]);
         }
     }
 }

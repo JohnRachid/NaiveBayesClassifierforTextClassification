@@ -33,14 +33,13 @@ public class NaiveBayesClassifier{
         for(int i = 0; i < categoryArray.length; i++){
             categoryArray[i] = new Category(i);
         }
-        //categoryArray[1].getFromWordsInClass(50);
 
         categoryArray = excelToArrayOfList(toIntExact(findNumberLineForLabel()),categoryArray);
         categoryArray = calculateDocumentsPerClass(categoryArray);
         for(int i = 0; i < categoryArray.length; i++){
             categoryArray[i].calculateNumTimesWordOccurs();
             categoryArray[i].calculateMaximumLikelihood();
-
+            categoryArray[i].calculateBayesianEstimator();
         }
 
     }
@@ -125,6 +124,7 @@ public class NaiveBayesClassifier{
         }
         return categoryArray;
     }
+    
 }
 
 
