@@ -95,7 +95,7 @@ public class Category  {
     public void calculateMaximumLikelihood(){ //Pmle(wk|wj) = nk/n
         for(int i = 0; i < timesWordAppearsInClass.length; i++){
             maximumLikelihoodEstimator[i] = timesWordAppearsInClass[i] / numWordsInClass;
-            //.out.println(maximumLikelihoodEstimator[i]);
+            //System.out.println(maximumLikelihoodEstimator[i]);
         }
     }
 

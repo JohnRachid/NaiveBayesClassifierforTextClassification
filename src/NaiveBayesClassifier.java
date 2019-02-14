@@ -131,33 +131,56 @@ public class NaiveBayesClassifier {
         return categoryArray;
     }
 
-    public static void evaluateModel(Category[] categoryArray) { // argmax_wj [ln(class prior) + summation of i in position of all word locations found in vocab ln(chance of word in class)
+    public static void evaluateModel(Category[] categoryArray) { // argmax_wj [ln(class prior) + the sum of ln (BE/MLE)" instead of
         double[] maximumLiklihoodEstimator;
         double[] bayesianEstimator;
-        double maxValue = 1;
+        double maxValue = 0;
         double bayesianValue = 1;
         double currentPrior = 0;
+        double currentClassValue;
+        double currentWordValue = 0;
+        double totalWordValues;
+        Boolean compute = true;
 
 
         for(int i = 0; i < categoryArray.length; i++){
+            compute = true;
             maximumLiklihoodEstimator = categoryArray[i].getMaximumLikelihoodEstimator();
             bayesianEstimator = categoryArray[i].getBayesianEstimator();
             currentPrior = categoryArray[i].getProir();
+            maxValue = 0;
+            currentClassValue = 0;
+
+            totalWordValues = 0;
+
             for(int j = 0; j < VOCABLENGTH; j++){
+                currentWordValue = 0;
+                maxValue = 0;
+                bayesianValue = 0;
                 if(maximumLiklihoodEstimator[j]!= 0){
-                    maxValue = maximumLiklihoodEstimator[j] * maxValue;
+                    maxValue = maximumLiklihoodEstimator[j];
+                }else{
+                    compute = false;
+                    System.out.println("ERROR"); // this should not happen when evaluating training values
                 }
                 if(bayesianEstimator[j]!= 0){
-                    bayesianValue = bayesianEstimator[j] * bayesianValue;
+                    bayesianValue = bayesianEstimator[j];
+                }if(compute){
+                    currentWordValue = Math.log(maxValue / bayesianValue);
+                    currentClassValue = currentWordValue +currentClassValue;
+                    System.out.println(currentWordValue);
+                }else{
 
                 }
 
-
+            }if(compute){
+                currentClassValue = Math.log(currentPrior) + currentClassValue;
+                //System.out.println("class "+ (i+1)+ "= "+currentClassValue);
+            }else{
+                //System.out.println("class "+ (i+1)+ "= "+ "0");
             }
-            maxValue = currentPrior * maxValue;
-            bayesianValue = currentPrior * bayesianValue;
-            System.out.println(maxValue);
-            System.out.println(bayesianValue);
+
+            //
         }
 
 
