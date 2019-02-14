@@ -18,7 +18,7 @@ public class Category  {
     private int numWordsInClass = 0;
     private int documentsInClass = 0;
     protected ArrayList<Integer> wordsInClass;
-    protected int[] timesWordAppearsInClass;
+    protected double[] timesWordAppearsInClass;
     protected double[] maximumLikelihoodEstimator;
     protected double[] bayesianEstimator;
     private int categoryNumber;
@@ -28,11 +28,18 @@ public class Category  {
 
         categoryNumber = categoryNum;
         wordsInClass = new ArrayList<Integer>();
-        timesWordAppearsInClass = new int[61188];
+        timesWordAppearsInClass = new double[61188];
         maximumLikelihoodEstimator = new double[61188];
         bayesianEstimator = new double[61188];
 
     }
+    public double[] getBayesianEstimator(){
+       return bayesianEstimator;
+    }
+    public double[] getMaximumLikelihoodEstimator(){
+        return maximumLikelihoodEstimator;
+    }
+
     public int getDocumentsInClass() {
         return documentsInClass;
     }
@@ -88,13 +95,14 @@ public class Category  {
     public void calculateMaximumLikelihood(){ //Pmle(wk|wj) = nk/n
         for(int i = 0; i < timesWordAppearsInClass.length; i++){
             maximumLikelihoodEstimator[i] = timesWordAppearsInClass[i] / numWordsInClass;
+            //.out.println(maximumLikelihoodEstimator[i]);
         }
     }
 
     public void calculateBayesianEstimator(){
         for(int i = 0; i < timesWordAppearsInClass.length; i++){ //use laplace to find Pbe(wk|wj) = nk+1 / v + words in vocab
-            maximumLikelihoodEstimator[i] = (maximumLikelihoodEstimator[i] + 1) / (numWordsInClass + VOCABLENGTH);
-            System.out.println(maximumLikelihoodEstimator[i]);
+            bayesianEstimator[i] = (timesWordAppearsInClass[i] + 1) / (numWordsInClass + VOCABLENGTH);
+            //System.out.println(bayesianEstimator[i]);
         }
     }
 }

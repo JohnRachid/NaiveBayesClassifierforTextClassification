@@ -5,6 +5,9 @@ import java.nio.file.Paths;
 import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.lang.Math;
+
+import static java.lang.Math.max;
 import static java.lang.Math.toIntExact;
 
 
@@ -16,7 +19,7 @@ import static java.lang.Math.toIntExact;
 //map.csv maps from label id's to label names
 
 
-public class NaiveBayesClassifier{
+public class NaiveBayesClassifier {
     private static final int NUMTOPICS = 20;
     private static final String mapPath = "data/map.csv";
     private static final String trainDataPath = "data/train_data.csv";
@@ -26,23 +29,27 @@ public class NaiveBayesClassifier{
     private static final String vocabPath = "data/vocabulary.txt";
     private static final String DELIMITER = ",";
     private static int[] trainLabel;
+    private static final double VOCABLENGTH = 61188.0;
+
 
 
     public static void main(String[] args) throws IOException {
         Category[] categoryArray = new Category[20];
-        for(int i = 0; i < categoryArray.length; i++){
+        for (int i = 0; i < categoryArray.length; i++) {
             categoryArray[i] = new Category(i);
         }
 
-        categoryArray = excelToArrayOfList(toIntExact(findNumberLineForLabel()),categoryArray);
+        categoryArray = excelToArrayOfList(toIntExact(findNumberLineForLabel()), categoryArray);
         categoryArray = calculateDocumentsPerClass(categoryArray);
-        for(int i = 0; i < categoryArray.length; i++){
+        for (int i = 0; i < categoryArray.length; i++) {
             categoryArray[i].calculateNumTimesWordOccurs();
             categoryArray[i].calculateMaximumLikelihood();
             categoryArray[i].calculateBayesianEstimator();
         }
+        evaluateModel(categoryArray);
 
     }
+
     public static long findTotalNumberOfDistinctWords() throws IOException {
         int numwords = 0;
         long count = Files.lines(Paths.get(vocabPath)).count();
@@ -70,7 +77,6 @@ public class NaiveBayesClassifier{
 //        Arrays.setAll(wordsByClass, element -> new ArrayList<>());
 
 
-
         BufferedReader brData = null;
         BufferedReader brlabel = null;
         try {
@@ -86,7 +92,7 @@ public class NaiveBayesClassifier{
             while ((dataLine = brData.readLine()) != null) {
                 String[] trainDataLine = dataLine.split(DELIMITER);   //trainDataLine[1] = wordID, trainDataLine[2] = word count
 
-                for(int i = 0; i < Integer.parseInt(trainDataLine[2]); i++){ //for everytime that word is in the document
+                for (int i = 0; i < Integer.parseInt(trainDataLine[2]); i++) { //for everytime that word is in the document
                     currentLabelLine = Integer.parseInt(trainDataLine[0]) - 1;
                     //wordsByClass[trainLabel[currentLabelLine] - 1].add(Integer.parseInt(trainDataLine[1]));
                     categoryArray[trainLabel[currentLabelLine] - 1].addToWordsInClass(Integer.parseInt(trainDataLine[1]));
@@ -103,7 +109,7 @@ public class NaiveBayesClassifier{
                 ie.printStackTrace();
             }
         }
-        for(int i = 0; i < categoryArray.length; i++){
+        for (int i = 0; i < categoryArray.length; i++) {
             categoryArray[i].setNumWordsInClass(categoryArray[i].getSizeOfWordsInClass());
         }
         return categoryArray;
@@ -113,18 +119,50 @@ public class NaiveBayesClassifier{
     public static Category[] calculateDocumentsPerClass(Category[] categoryArray) {
         double totalDocuments = trainLabel.length;
         int currentLabelLine = 0;
-        for(int i = 0; i < trainLabel.length; i++){
-          categoryArray[trainLabel[i]-1].incrementDocumentsInClass();
+        for (int i = 0; i < trainLabel.length; i++) {
+            categoryArray[trainLabel[i] - 1].incrementDocumentsInClass();
         }
-        for(int i = 0; i < categoryArray.length; i++){
+        for (int i = 0; i < categoryArray.length; i++) {
             categoryArray[i].setProir(categoryArray[i].getDocumentsInClass() / totalDocuments); //Prior of class = number of docs for that class / total documents
         }
-        for(int i = 0; i < categoryArray.length; i++){
+        for (int i = 0; i < categoryArray.length; i++) {
             System.out.println("Prior Document" + (i + 1) + ":" + categoryArray[i].getProir()); //Prior of class = number of docs for that class / total documents
         }
         return categoryArray;
     }
-    
+
+    public static void evaluateModel(Category[] categoryArray) { // argmax_wj [ln(class prior) + summation of i in position of all word locations found in vocab ln(chance of word in class)
+        double[] maximumLiklihoodEstimator;
+        double[] bayesianEstimator;
+        double maxValue = 1;
+        double bayesianValue = 1;
+        double currentPrior = 0;
+
+
+        for(int i = 0; i < categoryArray.length; i++){
+            maximumLiklihoodEstimator = categoryArray[i].getMaximumLikelihoodEstimator();
+            bayesianEstimator = categoryArray[i].getBayesianEstimator();
+            currentPrior = categoryArray[i].getProir();
+            for(int j = 0; j < VOCABLENGTH; j++){
+                if(maximumLiklihoodEstimator[j]!= 0){
+                    maxValue = maximumLiklihoodEstimator[j] * maxValue;
+                }
+                if(bayesianEstimator[j]!= 0){
+                    bayesianValue = bayesianEstimator[j] * bayesianValue;
+
+                }
+
+
+            }
+            maxValue = currentPrior * maxValue;
+            bayesianValue = currentPrior * bayesianValue;
+            System.out.println(maxValue);
+            System.out.println(bayesianValue);
+        }
+
+
+    }
+
 }
 
 
