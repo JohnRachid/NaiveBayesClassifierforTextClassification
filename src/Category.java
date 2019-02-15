@@ -48,6 +48,10 @@ public class Category  {
         return proir;
     }
 
+    public double getValueFromTimeswordAppearsInClass(int value){
+        return timesWordAppearsInClass[value];
+    }
+
     public void setProir(double proir) {
         this.proir = proir;
     }
