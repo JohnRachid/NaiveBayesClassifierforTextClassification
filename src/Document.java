@@ -1,11 +1,12 @@
 import java.util.ArrayList;
 
-public class Document {
+class Document {
     private int number;
     private int actualType;
     private int predictedType;
     private ArrayList<Integer> wordsInDocument;
-    Document(int number){
+
+    Document(int number) {
         wordsInDocument = new ArrayList<Integer>();
         actualType = this.number;
     }
@@ -17,6 +18,7 @@ public class Document {
     void setActualType(int actualType) {
         actualType = actualType;
     }
+
     int getPredictedType() {
         return predictedType;
     }
@@ -33,7 +35,7 @@ public class Document {
         wordsInDocument.add(wordNumber);
     }
 
-    int wordsSize(){
+    int wordsSize() {
         return wordsInDocument.size();
     }
 
