@@ -92,14 +92,15 @@ public class Category {
 
     void calculateMaximumLikelihood() { //Pmle(wk|wj) = nk/n
         for (int i = 0; i < timesWordAppearsInClass.length; i++) {
-            maximumLikelihoodEstimator[i] = timesWordAppearsInClass[i] / numWordsInClass;
+            maximumLikelihoodEstimator[i] = timesWordAppearsInClass[i] / wordsInClass.size();
             //System.out.println(maximumLikelihoodEstimator[i]);
         }
+
     }
 
     void calculateBayesianEstimator() {
         for (int i = 0; i < timesWordAppearsInClass.length; i++) { //use laplace to find Pbe(wk|wj) = nk+1 / v + words in vocab
-            bayesianEstimator[i] = (timesWordAppearsInClass[i] + 1) / (numWordsInClass + VOCABLENGTH);
+            bayesianEstimator[i] = (timesWordAppearsInClass[i] + 1) / (wordsInClass.size() + VOCABLENGTH);
             //System.out.println(bayesianEstimator[i]);
         }
     }

@@ -8,7 +8,7 @@ class Document {
 
     Document(int number) {
         wordsInDocument = new ArrayList<Integer>();
-        actualType = this.number;
+        actualType = number;
     }
 
     int getActualType() {

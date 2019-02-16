@@ -49,6 +49,10 @@ public class NaiveBayesClassifier {
         }
         fillTrainingDocuments(toIntExact(findNumberLineForTrainingLabel()));
         fillTestingDocuments(toIntExact(findNumberLineForTestingLabel()));
+       // for(int i = 0; i <trainingDocuments.length;i++ ){
+            //System.out.println(trainingDocuments[i].getActualType());
+       // }
+
         evaluateModelOnTraining(categoryArray);
         evaluateModelOnTesting(categoryArray);
 
@@ -68,8 +72,6 @@ public class NaiveBayesClassifier {
 
     private static long findNumberLineForTestingLabel() throws IOException {
         return Files.lines(Paths.get(testLabelPath)).count();
-
-
     }
 
     private static void fillTrainingDocuments(int numLines) {
@@ -98,7 +100,8 @@ public class NaiveBayesClassifier {
                 for (int i = 0; i < Integer.parseInt(trainDataLine[2]); i++) { //for everytime that word is in the document
                     currentLabelLine = Integer.parseInt(trainDataLine[0]) - 1;
                     //wordsByClass[trainLabel[currentLabelLine] - 1].add(Integer.parseInt(trainDataLine[1]));
-                    trainingDocuments[trainLabel[currentLabelLine] - 1].addToWordsInDocument(Integer.parseInt(trainDataLine[1]));
+
+                    trainingDocuments[currentLabelLine].addToWordsInDocument(Integer.parseInt(trainDataLine[1]));
                     // System.out.println("temp");
                 }
             }
@@ -118,8 +121,9 @@ public class NaiveBayesClassifier {
     } //TODO incorrect creating a new document every line
 
     private static void fillTestingDocuments(int numLines) {
-        trainLabel = new int[numLines];
-        testingDocuments = new Document[8918];
+        //trainLabel = new int[numLines];
+        testingDocuments = new Document[numLines];
+        //testLabel = new int[numLines];
         int currentLine = 0;
         int currentLabelLine = 0;
         BufferedReader brData = null;
@@ -132,16 +136,17 @@ public class NaiveBayesClassifier {
             String labelLine = "";
             while ((labelLine = brlabel.readLine()) != null) {
                 Document tempDoc = new Document(Integer.parseInt(labelLine));
-                testLabel[currentLine] = Integer.parseInt(labelLine);
+                testingDocuments[currentLine] = tempDoc;
+                //tempDoc.setPredictedType(); = Integer.parseInt(labelLine);
                 currentLine++;
             }
             while ((dataLine = brData.readLine()) != null) {
-                String[] trainDataLine = dataLine.split(DELIMITER);   //trainDataLine[1] = wordID, trainDataLine[2] = word count
+                String[] testDataLine = dataLine.split(DELIMITER);   //trainDataLine[1] = wordID, trainDataLine[2] = word count
 
-                for (int i = 0; i < Integer.parseInt(trainDataLine[2]); i++) { //for everytime that word is in the document
-                    currentLabelLine = Integer.parseInt(trainDataLine[0]) - 1;
+                for (int i = 0; i < Integer.parseInt(testDataLine[2]); i++) { //for everytime that word is in the document
+                    currentLabelLine = Integer.parseInt(testDataLine[0]) - 1;
                     //wordsByClass[testLabel[currentLabelLine] - 1].add(Integer.parseInt(trainDataLine[1]));
-                    testingDocuments[testLabel[currentLabelLine] - 1].addToWordsInDocument(Integer.parseInt(trainDataLine[1]));
+                    testingDocuments[currentLabelLine].addToWordsInDocument(Integer.parseInt(testDataLine[1]));
                     //System.out.println(train);
                 }
             }
@@ -246,13 +251,15 @@ public class NaiveBayesClassifier {
         for (int i = 0; i < trainingDocuments.length; i++) { // per document
             highestClass = 0;
             highestClassValue = 0;
+            currentClassValue = 0;
 
             for (int j = 0; j < categoryArray.length; j++) { //per class
                 compute = true;
                 maximumLiklihoodEstimator = categoryArray[j].getMaximumLikelihoodEstimator();
                 bayesianEstimator = categoryArray[j].getBayesianEstimator();
                 currentPrior = categoryArray[j].getPrior();
-                currentClassValue = 0;
+                compute = true;
+
 
 
                 for (int k = 0; k < trainingDocuments[i].wordsSize(); k++) { // per word
@@ -260,17 +267,19 @@ public class NaiveBayesClassifier {
                     ArrayList<Integer> wordsInDoc = trainingDocuments[i].getWordsInDocument();
                     word = wordsInDoc.get(k);
 
-                    compute = true;
-                    if (wordsInDoc.get(word) != 0) {
+
+//                    System.out.println("word value"+word);
+//                    System.out.println("k value:" + k);
+                    if (maximumLiklihoodEstimator[word] != 0) {
                         maxValue = maximumLiklihoodEstimator[word];
                         bayesianValue = bayesianEstimator[word];
 
-                        if (compute) {
-                            currentWordValue = Math.log(bayesianValue / maxValue);
+
+                            currentWordValue = bayesianValue / maxValue;
                             currentClassValue = currentWordValue + currentClassValue;
                             //  System.out.println(currentWordValue);
 
-                        }
+
                     } else {
                         compute = false;
                     }
@@ -278,17 +287,22 @@ public class NaiveBayesClassifier {
 
                 }
                 if (compute) {
-                    currentClassValue = Math.log(currentPrior) + currentClassValue;
-                    //System.out.println("class "+ (i+1)+ " = "+currentClassValue);
+                    currentClassValue = currentPrior + currentClassValue;
+                   // System.out.println("class "+ (j+1)+ " = "+currentClassValue);
                 } else {
-                    System.out.println("class " + (i + 1) + " = " + "0");
+                    currentClassValue = 0;
+                    //System.out.println("class " + (i + 1) + " = " + "0");
                 }
                 if (currentClassValue > highestClassValue) {
                     highestClass = j;
+                    highestClassValue = currentClassValue;
                 }
+                currentClassValue = 0;
             }
-            // System.out.print("Actual: " + trainingDocuments[i].getActualType() + "Predicted: " + trainingDocuments[i].getPredictedType() +"\n");
-            trainingDocuments[i].setPredictedType(highestClass);
+
+            trainingDocuments[i].setPredictedType(highestClass + 1);
+            //System.out.print("Actual: " + trainingDocuments[i].getActualType() + "Predicted: " + trainingDocuments[i].getPredictedType() +"\n");
+
             if (trainingDocuments[i].getPredictedType() == trainingDocuments[i].getActualType()) {
                 countCorrect++;
             }
@@ -314,51 +328,53 @@ public class NaiveBayesClassifier {
 
 
         for (int i = 0; i < testingDocuments.length; i++) { // per document
-            highestClass = 0;
+            highestClass = -1;
+            currentClassValue = 0;
             highestClassValue = 0;
 
             for (int j = 0; j < categoryArray.length; j++) { //per class
-                compute = true;
                 maximumLiklihoodEstimator = categoryArray[j].getMaximumLikelihoodEstimator();
                 bayesianEstimator = categoryArray[j].getBayesianEstimator();
                 currentPrior = categoryArray[j].getPrior();
-                currentClassValue = 0;
+                compute = true;
+
+
 
 
                 for (int k = 0; k < testingDocuments[i].wordsSize(); k++) { // per word
-
+                    currentWordValue = 0;
                     ArrayList<Integer> wordsInDoc = testingDocuments[i].getWordsInDocument();
 
-                    compute = true;
-
                     word = wordsInDoc.get(k);
-                    //System.out.println(word);
-                    if (wordsInDoc.get(word) != 0) {
+                    if (maximumLiklihoodEstimator[word] != 0) {
                         maxValue = maximumLiklihoodEstimator[word];
                         bayesianValue = bayesianEstimator[word];
 
-                        if (compute) {
-                            currentWordValue = Math.log(bayesianValue / maxValue);
+                       // if (compute) {
+                            currentWordValue = bayesianValue / maxValue;
                             currentClassValue = currentWordValue + currentClassValue;
-                            //  System.out.println(currentWordValue);
+                            //System.out.println(currentWordValue);
 
-                        }
+                       // }
                     } else {
-                        compute = false;
+                        //compute = false;
                     }
-
-
                 }
                 if (compute) {
-                    currentClassValue = Math.log(currentPrior) + currentClassValue;
-                    //System.out.println("class "+ (i+1)+ " = "+currentClassValue);
+                    currentClassValue = currentPrior + currentClassValue;
+                    System.out.println("class "+ (j+1)+ " = "+ currentClassValue);
+                } else{
+                    currentClassValue = 0;
                 }
                 if (currentClassValue > highestClassValue) {
                     highestClass = j;
+                    highestClassValue = currentClassValue;
                 }
+                currentClassValue = 0;
             }
-            testingDocuments[i].setPredictedType(highestClass);
-            // System.out.print("Actual: " + testingDocuments[i].getActualType() + "Predicted: " + testingDocuments[i].getPredictedType() +"\n");
+            //System.out.println(highestClass);
+            testingDocuments[i].setPredictedType(highestClass + 1);
+             System.out.print("Actual: " + testingDocuments[i].getActualType() + "Predicted: " + testingDocuments[i].getPredictedType() +"\n");
             if (testingDocuments[i].getPredictedType() == testingDocuments[i].getActualType()) {
                 countCorrect++;
             }
