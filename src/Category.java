@@ -6,7 +6,7 @@ public class Category {
     private int numWordsInClass = 0;
     private int documentsInClass = 0;
     private ArrayList<Integer> wordsInClass;
-    private double[] timesWordAppearsInClass;
+    private double[] distinctWordsInClass;
     private double[] maximumLikelihoodEstimator;
     private double[] bayesianEstimator;
     private int categoryNumber;
@@ -16,10 +16,32 @@ public class Category {
 
         categoryNumber = categoryNum;
         wordsInClass = new ArrayList<Integer>();
-        timesWordAppearsInClass = new double[61189];
         maximumLikelihoodEstimator = new double[61189];
         bayesianEstimator = new double[61189];
+        distinctWordsInClass = new double[61189]; //index [x][0] = wordValue , index[x][1] = timesItAppeard
 
+    }
+
+    /**
+     * sets the value at indexOne equal to the number to add.
+     * @param indexOne the index at which the value will be set equal to number to add
+     * @param numberToAdd the number that will be added at indexOne
+     */
+    void addToDistinctWordsInClass(int indexOne, double numberToAdd){
+        distinctWordsInClass[indexOne] = numberToAdd;
+    }
+
+    /**
+     * adds the value at distinctWordsInClass to itself plus the number that will be added.
+     * @param indexOne the index at which the value is being changed
+     * @param numberToAdd the number which is being added
+     */
+    void addAmountToDistinctWordsInClass(int indexOne, double numberToAdd){
+        distinctWordsInClass[indexOne] = distinctWordsInClass[indexOne] + numberToAdd;
+    }
+
+    double[] getDistinctWordsInClass(){
+        return distinctWordsInClass;
     }
 
     double[] getBayesianEstimator() {
@@ -36,10 +58,6 @@ public class Category {
 
     double getPrior() {
         return prior;
-    }
-
-    public double getValueFromTimeswordAppearsInClass(int value) {
-        return timesWordAppearsInClass[value];
     }
 
     void setPrior(double prior) {
@@ -62,45 +80,26 @@ public class Category {
         return wordsInClass.size();
     }
 
-
-    public int getNumWordsInClass() {
-        return numWordsInClass;
-    }
-
     void setNumWordsInClass(int numWordsInClass) {
         this.numWordsInClass = numWordsInClass;
     }
 
-
-    public int getCategoryNumber() {
-        return categoryNumber;
-    }
-
-    public void setCategoryNumber(int categoryNumber) {
-        this.categoryNumber = categoryNumber;
-    }
-
-    void calculateNumTimesWordOccurs() { //nk
-        for (int i = 0; i < wordsInClass.size(); i++) {
-            timesWordAppearsInClass[wordsInClass.get(i)] = timesWordAppearsInClass[wordsInClass.get(i)] + 1;
-            // System.out.println(timesWordAppearsInClass[0]);
-            if (i == 7) {
-                // System.out.println(timesWordAppearsInClass[wordsInClass.get(i)]); //this isint printing out the correct number of times a specific word appears
-            }
-        }
-    }
-
-    void calculateMaximumLikelihood() { //Pmle(wk|wj) = nk/n
-        for (int i = 0; i < timesWordAppearsInClass.length; i++) {
-            maximumLikelihoodEstimator[i] = timesWordAppearsInClass[i] / wordsInClass.size();
-            //System.out.println(maximumLikelihoodEstimator[i]);
+    /**
+     * calculates the maximum likelihood for each word in the current category.
+     */
+    void calculateMaximumLikelihood() { //Pmle(wk|wj) = nk/n nk = number of times word occurs in all documents in class n = total number of words in all documents in class wj
+        for (int i = 0; i < VOCABLENGTH; i++) {
+            maximumLikelihoodEstimator[i] = (distinctWordsInClass[i]) / wordsInClass.size();
         }
 
     }
 
+    /**
+     * calculates the bayestion estimator value for each word in the current category using the laplace estimate
+     */
     void calculateBayesianEstimator() {
-        for (int i = 0; i < timesWordAppearsInClass.length; i++) { //use laplace to find Pbe(wk|wj) = nk+1 / v + words in vocab
-            bayesianEstimator[i] = (timesWordAppearsInClass[i] + 1) / (wordsInClass.size() + VOCABLENGTH);
+        for (int i = 0; i < VOCABLENGTH; i++) { //use laplace to find Pbe(wk|wj) = nk+1 / v + words in vocab
+            bayesianEstimator[i] = (distinctWordsInClass[i] + 1) / (wordsInClass.size() + VOCABLENGTH);
             //System.out.println(bayesianEstimator[i]);
         }
     }
