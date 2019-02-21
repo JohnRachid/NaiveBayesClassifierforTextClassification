@@ -356,6 +356,8 @@ public class NaiveBayesClassifier {
             System.out.println("Testing data set Bayesian: " + countCorrect + " correct out of " + testingDocuments.length);
             statistics(countCorrect, testingDocuments, categoryArray);
         } else {
+            /*If there is a word in the testing document that is not in the training set the MLE will not predict a category
+             which is the reasoning for the small numbers in the confusion matrix */
             System.out.println("Testing data set Maximum Likelihood: " + countCorrect + " correct out of " + testingDocuments.length);
             statistics(countCorrect, testingDocuments, categoryArray);
         }
